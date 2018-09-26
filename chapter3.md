@@ -868,6 +868,7 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
 ; `stream-cdr`会强迫对`#stream`求值(evaluate), 即调用`stream-map`
 ; `stream-map`会返回(stream-cons (fn 1) (stream-map fn (stream-cdr s)))
 ; 看到了么，核心在最后的(stream-cdr s)，这和我们主动的调用一摸一样,这是第二次。
+
 (stream-car (stream-cdr (stream-cdr s)))
 ; 访问第三项来触发第二次`stream-cdr`
 
@@ -878,4 +879,15 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
 ; cache无效,就会产生很多额外的计算
 
 ; 如果本身`delay`没有做cache，这俩就没区别了。
+```
+
+### 3.64
+```scheme
+(define (stream-limit stream tolerance)
+  (let ((fst (stream-car stream))
+        (snd (stream-car (stream-cdr stream))))
+    (if (< (abs (- fst snd)) tolerance)
+        snd
+        (stream-limit (stream-cdr stream))
+    )))
 ```
