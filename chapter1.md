@@ -10,9 +10,9 @@
       (else (+ (square x) (square y))))
 ```
 ### 1.5
-只要对`(p)`求值，程序就会死于无穷的递归。  
-**normal-order evaluation**: 正常执行退出，输出0，因为求值被推迟到实际需要时，而此次调用不需要对`(P)`求值。  
-**applicative-order evaluation**： 先求值在调用，直接卡死。
+只要对`(p)`求值，程序就会死于无穷的递归。  
+**normal-order evaluation**: 正常执行退出，输出0，因为求值被推迟到实际需要时，而此次调用不需要对`(P)`求值。  
+**applicative-order evaluation**： 先求值在调用，直接卡死。
 
 ### 1.6
 卡死， 因为*Scheme*使用的是**applicative-order evaluation**,按照新的定义方式，`new-if`成为一个普通的`combination`。
@@ -22,7 +22,7 @@
           guess
           (sqrt-iter (improve guess x) x)))
 ```
-在这一步死于无穷的`sqrt-iter`递归。
+在这一步死于无穷的`sqrt-iter`递归。
 
 ### 1.7
 ```scheme
@@ -275,7 +275,7 @@
                2)
 ; 4.555534487262465
 ```
-应用`average damping`后会更快的得到结果
+应用`average damping`后会更快的得到结果
 
 ### 1.37
 ```scheme
@@ -429,13 +429,13 @@
 | --- | --- | --- |
 | 2 | 1 | Converge |
 | 3 | 1 | Converge |
-| 4 | 1 | Unconverge |
-| 4 | 2 | Converge |
-| 5 | 2 | Converge |
-| 6 | 2 | Converge |
-| 7 | 2 | Converge |
-| 8 | 2 | Unconverge |
-| 8 | 3 | Converge |
+| 4 | 1 | Unconverge |
+| 4 | 2 | Converge |
+| 5 | 2 | Converge |
+| 6 | 2 | Converge |
+| 7 | 2 | Converge |
+| 8 | 2 | Unconverge |
+| 8 | 3 | Converge |
 | n | floor(log<sub>2</sub>n)| Converge |
 
 ```scheme
