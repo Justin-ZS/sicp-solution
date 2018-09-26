@@ -727,7 +727,7 @@ A: 增加很多重复计算，并且每次计算都会增加sum的值，结果�
 ### 3.55
 ```scheme
 (define (partial-sums s)
-  (add-streams (cons-stream 0 (partial-sums s)) s)))
+  (add-streams (cons-stream 0 (partial-sums s)) s))
 ```
 
 ### 3.56
@@ -844,4 +844,38 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
   ))
 
 (define tangent-series (div-series sine-series cosine-series))
+```
+
+### 3.63
+回忆一下cache的处理，当`stream-cdr`访问同一个stream两次时，第二次返回的是cache起来的结果。  
+这里的核心是**同一个**stream，什么时候会认为是同一个呢？  
+先看之前的版本：
+```scheme
+ (define (sqrt-stream x)
+   (define guesses
+     (cons-stream 1.0
+                  (stream-map (lambda (guess) (sqrt-improve guess x))
+                               guesses)))
+   guesses)
+; create a stream
+(define s (sqrt-stream 1))
+; s = (1, #stream) = (1, (stream-map fn s)))
+; #stream = (stream-map fn s)
+; 这里有两个`cons-stream`: 一个在`sqrt-stream`，一个在`stream-map`里.
+; 前者只负责把第一项cons进去，剩下的项都被后者塞进去。
+; 因此忽略第一项，当我们访问第二项会怎么样？
+(stream-car (stream-cdr s))
+; `stream-cdr`会强迫对`#stream`求值(evaluate), 即调用`stream-map`
+; `stream-map`会返回(stream-cons (fn 1) (stream-map fn (stream-cdr s)))
+; 看到了么，核心在最后的(stream-cdr s)，这和我们主动的调用一摸一样,这是第二次。
+(stream-car (stream-cdr (stream-cdr s)))
+; 访问第三项来触发第二次`stream-cdr`
+
+; 下一个问题是为什么会认为是同一个stream?
+; 因为他们都是guesses，自然是同一个
+; 所以Louis版的问题就在于这两个stream并不是同一个。
+; (sqrt-stream 1) != (sqrt-stream 1)
+; cache无效,就会产生很多额外的计算
+
+; 如果本身`delay`没有做cache，这俩就没区别了。
 ```
