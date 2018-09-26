@@ -891,3 +891,12 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
         (stream-limit (stream-cdr stream))
     )))
 ```
+
+### 3.65
+```scheme
+(define (ln2-summands n)
+  (cons-stream (/ 1.0 n)
+               (stream-map - (ln2-summands (+ n 1)))))
+(define ln2-stream
+  (partial-sums (ln2-summands 1)))
+```
