@@ -30,7 +30,7 @@
         (end   (end-segment seg)))
        (make-point (average (x-point start) (x-point end))
                    (average (y-point start)   (y-point end)))
-  )))
+  ))
 
 ```
 
@@ -169,7 +169,7 @@
 (define (reverse xs)
   (if (null? xs)
       '()
-      (append (reverse (cdr xs)) (list (car xs))))
+      (append (reverse (cdr xs)) (list (car xs)))
   ))
 ```
 
@@ -519,7 +519,7 @@ A: No. see the result of `(cc 100 (reverse us-coins))`
 ### 2.43
 此程序的开销都在`queen-cols`上，包含`board-size`次迭代。
 调换顺序后`queen-cols`由每个迭代跑1次，增加到每个迭代跑`board-size`次。  
-原先是:  
+原先是:  
   * `board-size + 1`次  
 
 现在是:  
@@ -724,7 +724,7 @@ A: No. see the result of `(cc 100 (reverse us-coins))`
 ; 一样
 
 ; b
-; 如果不看append函数，两种算法复杂度相同。
+; 如果不看append函数，两种算法复杂度相同。
 ; 实际上append的复杂度为Θ(n)
 ; 所以前者性能更差，Θ(n^2) > Θ(n)
 ```
@@ -745,7 +745,7 @@ A: No. see the result of `(cc 100 (reverse us-coins))`
 ;             4     9
 
 ; b
-; 每次迭代出一个节点，所以是Θ(n)
+; 每次迭代出一个节点，所以是Θ(n)
 ```
 
 ### 2.65
@@ -899,7 +899,7 @@ A: No. see the result of `(cc 100 (reverse us-coins))`
 ; n个symbol: Θ(n)
 ; append: Θ(n) ~ Θ(1)
 ; element-in-list?: Θ(n) ~ Θ(1)
-; 注意append和element-in-list?不是嵌套关系，而是顺序执行关系(复杂度相加而不是相乘)
+; 注意append和element-in-list?不是嵌套关系，而是顺序执行关系(复杂度相加而不是相乘)
 ; 最差情况是: Θ(n^2). 最好情况是：Θ(n)
 ```
 
@@ -970,18 +970,18 @@ A: No. see the result of `(cc 100 (reverse us-coins))`
 
 message-passing-style win！
 
-对于增加新的api，这三种抽象都需要增加所有类型的新api实现。
+对于增加新的api，这三种抽象都需要增加所有类型的新api实现。
 此外：
 * explicit dispatch: 暴露新的api，考虑命名冲突
-* data-directed style: 所有类型都要注册新api
-* message-passing-style: 所有已存在的对象（部分调用的函数）需要重新生成才能应用新的api
+* data-directed style: 所有类型都要注册新api
+* message-passing-style: 所有已存在的对象（部分调用的函数）需要重新生成才能应用新的api
 
 data-directed style win！
 
 ### 2.77
-每次成功的调用(`apply-generic` invoked)都会剥除掉匹配到的tag，并把内容传递给匹配到的函数。  
+每次成功的调用(`apply-generic` invoked)都会剥除掉匹配到的tag，并把内容传递给匹配到的函数。  
 修改后的调用实际上跑了两遍`apply-generic`,  
-第一次把内容传给了外层的`magnitude`,  
+第一次把内容传给了外层的`magnitude`,  
 第二次把内容传给了包内的`magnitude`
 
 ### 2.78
