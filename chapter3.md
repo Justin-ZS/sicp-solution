@@ -243,7 +243,7 @@ v
 ```
 
 ### 3.19
-若有环快慢指针同起点一定相遇。
+若有环,快慢指针**同起点**一定相遇.
 ```scheme
 (define (is-list-cycle? xs)
   (define (floyd-iter slow fast flag)
@@ -394,7 +394,7 @@ t
 
 ### 3.26
 ```scheme
-; 一步到位，多维的二叉树表
+; 一步到位，多维的二叉树表
 (define (make-table)
   (define (entry tree) (car tree))
   (define (left-branch tree) (cadr tree))
@@ -473,7 +473,7 @@ t
 
 ### 3.27
 ```scheme
-; 加了cache以后，每个n只会算一次，所以(memo-fib n)只会算n次。
+; 加了cache以后，每个n只会算一次，所以(memo-fib n)只会算n次。
 (define memo-fib (memoize fib))
 ; 不起作用，因为fib里面递归的是fib，而非有cache的memo-fib
 
@@ -486,7 +486,7 @@ t
 
 (define (memoize f)
   (let ((table (make-table)))
-    (lambda (x) ; memo-fib 抓的即是这个函数，共用一个table，所有cache有效
+    (lambda (x) ; memo-fib 抓的即是这个函数，共用一个table，所有cache有效
       (let ((previously-computed-result (lookup x table)))
         (or previously-computed-result
             (let ((result (f x)))
@@ -546,7 +546,7 @@ b:  110, 80, 50,...
 ### 3.39
 101, 121, 100
 11不可能，因为P2被序列号，无法被插入。
-110不可能，因为（* x x）被序列号，两次取的x值一定相等。
+110不可能，因为（* x x）被序列号，两次取的x值一定相等。
 
 ### 3.40
 P1: `(lambda () (set! x (* x x)))`  
@@ -584,13 +584,13 @@ It's safe since the amount is passed as argument rather then calculated from two
 
 ### 3.45
 Deadlock  
-调用被序列化的`exchange`会消耗掉唯一的序列资源，而在`exchange`里面，再次调用被同样序列化的`withdraw／deposit`会再次请求已被占用的序列资源，所以被挂起直到`exchange`结束，这同样会导致`exchange`永远不会结束。  
-原版为什么不会呢？因为原版`exchange`调用的`withdraw／deposit`并没有被序列化。
+调用被序列化的`exchange`会消耗掉唯一的序列资源，而在`exchange`里面，再次调用被同样序列化的`withdraw／deposit`会再次请求已被占用的序列资源，所以被挂起直到`exchange`结束，这同样会导致`exchange`永远不会结束。  
+原版为什么不会呢？因为原版`exchange`调用的`withdraw／deposit`并没有被序列化。
 
 
 ### 3.46
 ```scheme
-; Procedure: P1, P2
+; Procedure: P1, P2
 ; P1 check mutex -> P2 check mutex -> P1 set mutex and run -> P2 set mutex and run -> anomalous result
 ```
 
@@ -702,12 +702,12 @@ Deadlock
 ```
 Q: Implemented `(delay <exp>)` simply as `(lambda () <exp>)`, what would differ?  
 A: 增加很多重复计算，并且每次计算都会增加sum的值，结果完全不同。  
-每个`stream-cons`都有一个`delay`
-* `stream-enumerate-interval`： 增加计算量
+每个`stream-cons`都有一个`delay`
+* `stream-enumerate-interval`： 增加计算量
 * `stream-map`：增加计算量，重复增加sum值
 * `stream-filter`: 增加计算量  
 
-有副作用(side-effect)的函数在stream(lazy evaluate)中会带来很多非常难debug的问题。如果要用惰性求值，所有的函数一定,必须,只能是**纯函数**！(mathematic function).这样做不做cache只是性能问题，而不可能改变结果。
+有副作用(side-effect)的函数在stream(lazy evaluate)中会带来很多非常难debug的问题。如果要用惰性求值，所有的函数一定,必须,只能是**纯函数**！(mathematic function).这样做不做cache只是性能问题，而不可能改变结果。
 
 
 ### 3.53
@@ -763,7 +763,7 @@ A: 增加很多重复计算，并且每次计算都会增加sum的值，结果�
 ; (quotient (* 3 10) 7) --> 4
 ; (quotient (* 2 10) 7) --> 2
 ; ...
-(expand 3 8 10)
+(expand 3 8 10)
 ; (quotient (* 3 10) 8) --> 3
 ; (quotient (* 6 10) 8) --> 7
 ; (quotient (* 4 10) 8) --> 5
