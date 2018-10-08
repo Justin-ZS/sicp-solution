@@ -900,3 +900,49 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
 (define ln2-stream
   (partial-sums (ln2-summands 1)))
 ```
+
+### 3.66
+```scheme
+; (1,100) in (1+, 1+)
+; (1, 1), (2+, 2+), (1, 2+)
+; 大约 200个 (1 + 99 + 98 = 198)
+; (99, 100)
+; (2, 100): 在(2+, 2+)中大约前面有200个，类似(1, 100)
+; 在总体中，交叉来看大约 200 * 2 = 400个
+; 所以 (99, 100) 前大概有200 * 2^98个， 具体为(99 * 2^99)
+```
+
+### 3.67
+```scheme
+(define (pairs s t)
+  (cons-stream
+   (list (stream-car s) (stream-car t))
+   (interleave
+    (interleave (stream-map (lambda (x) (list (stream-car s) x)) (stream-cdr t))
+                (stream-map (lambda (x) (list (stream-car t) x)) (stream-cdr s)))
+    (pairs (stream-cdr s) (stream-cdr t)))
+  ))
+```
+
+### 3.68
+```scheme
+; he remove the `cons-stream`, so the recurse wouldn't be delayed
+; (pairs s t) -> (pairs (stream-cdr s) (stream-cdr t)) -> ...
+; cause a infinite loop
+```
+
+### 3.69
+```scheme
+(define (triples s t u)
+  (cons-stream (list (stream-car s) (stream-car t) (stream-car u))
+    (interleave
+      (stream-map (lambda (tu) (cons (stream-car s) tu)) (pairs t (stream-cdr u)))
+      (triples (stream-cdr s) (stream-cdr t) (stream-cdr u))
+    )
+  ))
+(define pythagorean-triples
+  (stream-filter
+    (lambda (xs) (= (+ (square (car xs)) (square (cadr xs))) (square (caddr xs))))
+    (triples integers integers integers)
+  ))
+```
