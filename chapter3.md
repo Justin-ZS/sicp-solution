@@ -946,3 +946,49 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
     (triples integers integers integers)
   ))
 ```
+
+### 3.70
+```scheme
+(define (merge-weighted weight s1 s2)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        (else
+          (let ((s1-car (stream-car s1))
+                (s2-car (stream-car s2)))
+              (if (> (weight s1-car) (weight s1-car))
+                  (cons-stream s1-car (merge-weighted weight (stream-cdr s1) s2))
+                  (cons-stream s2-car (merge-weighted weight s1 (stream-cdr s2)))
+              )))
+  ))
+
+(define (weighted-pairs weight s1 s2)
+  (cons-stream
+   (list (stream-car s) (stream-car t))
+   (merge-weighted weight
+    (stream-map (lambda (x) (list (stream-car s) x))
+                (stream-cdr t))
+    (pairs (stream-cdr s) (stream-cdr t)))))
+
+; a
+(define (weight-a xs)
+  (+ (car xs) (cadr xs)))
+(define pairs-a (weighted-pairs weight-a integers integers))
+
+;b
+(define (weight-b xs)
+  (+ (* 2 (car xs)) (* 3 (cadr xs)) (* 5 (car xs) (cadr xs))))
+(define (divisible-235? x)
+  (cond ((= (remainder x 2) 0) #t)
+        ((= (remainder x 3) 0) #t)
+        ((= (remainder x 5) 0) #t)
+        (else #f)
+  ))
+(define (filter-b? xs)
+  (not (or
+    (divisible-235? (car xs))
+    (divisible-235? (cadr xs)))
+  ))
+(define pairs-b
+  (stream-filter filter-b?
+    (weighted-pairs weight-b integers integers)))
+```
