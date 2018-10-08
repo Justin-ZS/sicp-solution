@@ -1,5 +1,5 @@
 ### SICP Solution Chapter 1
-完成度： 31/46
+完成度: 31/46
 ### 1.3
 ```scheme
 (define (square x) (* x x))

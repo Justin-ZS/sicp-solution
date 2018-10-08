@@ -1,5 +1,5 @@
 ### SICP Solution Chapter 2
-完成度： 75/97
+完成度: 75/97
 ### 2.1
 ```scheme
 (define (make-rat n d)

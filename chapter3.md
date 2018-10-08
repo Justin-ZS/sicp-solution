@@ -1,5 +1,5 @@
 ### SICP Solution Chapter 3
-完成度： 
+完成度: 62/82
 ### 3.1
 ```scheme
 (define (make-accumulator init)
@@ -1009,9 +1009,7 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
           (filter-ramanujan (stream-cdr s1) (stream-cdr s2))
       ))
     (stream-map sum-of-cube (filter-ramanujan stream (stream-cdr stream)))
-  ))
-
-; 
+  )) 
 ```
 
 ### 3.72
