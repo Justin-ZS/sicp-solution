@@ -870,7 +870,7 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
 ; 看到了么，核心在最后的(stream-cdr s)，这和我们主动的调用一摸一样,这是第二次。
 
 (stream-car (stream-cdr (stream-cdr s)))
-; 访问第三项来触发第二次`stream-cdr`
+; 访问第三项来触发第二次`stream-cdr`
 
 ; 下一个问题是为什么会认为是同一个stream?
 ; 因为他们都是guesses，自然是同一个
