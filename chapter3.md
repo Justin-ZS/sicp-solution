@@ -1,5 +1,6 @@
 ### SICP Solution Chapter 3
-完成度: 62/82
+完成度: 62/82  
+电路有毒！:sob:
 ### 3.1
 ```scheme
 (define (make-accumulator init)
