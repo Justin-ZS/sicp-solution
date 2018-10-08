@@ -955,19 +955,19 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
         (else
           (let ((s1-car (stream-car s1))
                 (s2-car (stream-car s2)))
-              (if (> (weight s1-car) (weight s1-car))
+              (if (< (weight s1-car) (weight s2-car))
                   (cons-stream s1-car (merge-weighted weight (stream-cdr s1) s2))
                   (cons-stream s2-car (merge-weighted weight s1 (stream-cdr s2)))
               )))
   ))
 
-(define (weighted-pairs weight s1 s2)
+(define (weighted-pairs weight s t)
   (cons-stream
    (list (stream-car s) (stream-car t))
    (merge-weighted weight
     (stream-map (lambda (x) (list (stream-car s) x))
                 (stream-cdr t))
-    (pairs (stream-cdr s) (stream-cdr t)))))
+    (weighted-pairs weight (stream-cdr s) (stream-cdr t)))))
 
 ; a
 (define (weight-a xs)
@@ -991,4 +991,37 @@ sin(x) | 0 | 1 | 0 | -1/(3*2) |
 (define pairs-b
   (stream-filter filter-b?
     (weighted-pairs weight-b integers integers)))
+```
+
+### 3.71
+```scheme
+(define (sum-of-cube xs) 
+  (let ((fst (car xs))
+        (snd (cadr xs)))
+    (+ (* fst fst fst) (* snd snd snd))
+  ))
+
+(define ramanujan-numbers
+  (let ((stream (weighted-pairs sum-of-cube integers integers)))
+    (define (filter-ramanujan s1 s2)
+      (if (= (sum-of-cube (stream-car s1)) (sum-of-cube (stream-car s2)))
+          (cons-stream (stream-car s1) (filter-ramanujan (stream-cdr s1) (stream-cdr s2)))
+          (filter-ramanujan (stream-cdr s1) (stream-cdr s2))
+      ))
+    (stream-map sum-of-cube (filter-ramanujan stream (stream-cdr stream)))
+  ))
+
+; 
+```
+
+### 3.72
+```scheme
+(define (filter-three s1 s2, s3)
+  (if (= (sum-of-cube (stream-car s1)) (sum-of-cube (stream-car s2)) (sum-of-cube (stream-car s3)))
+      (cons-stream (stream-car s1) (filter-ramanujan (stream-cdr s1) (stream-cdr s2) (stream-cdr s3)))
+      (filter-ramanujan (stream-cdr s1) (stream-cdr s2) (stream-cdr s3))
+  ))
+(define three-ways-numbers
+  (define stream (weighted-pairs sum-of-cube integers integers))
+  (stream-map sum-of-cube (filter-three stream (stream-cdr stream) (stream-cdr (stream-cdr stream)))))
 ```
