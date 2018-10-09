@@ -106,9 +106,7 @@ self-evaluating和variable不是复杂表达式，不需要改变
       val
       (let ((cur (eval (fst-clause clauses) env)))
         (if (true? cur) (eval-and (rest-clauses clauses) env cur) '#f)
-      )
-  )
-)
+      )))
 
 (put 'or (lambda (exp env) (eval-or (or-clauses exp) env)))
 (define (eval-or clauses env)
@@ -116,9 +114,7 @@ self-evaluating和variable不是复杂表达式，不需要改变
       '#f
       (let ((cur (eval (fst-clause clauses) env)))
         (if (true? cur) cur (eval-or (rest-clauses clauses) env))
-      )
-  )
-)
+      )))
 
 ; derived expressions
 
@@ -139,4 +135,48 @@ self-evaluating和variable不是复杂表达式，不需要改变
                (fst-clause clauses)
                (or->if (rest-clauses clauses))
       )))
+```
+
+
+### 4.5
+```scheme
+(define (cond? exp) (tagged-list? exp 'cond))
+(define (cond-clauses exp) (cdr exp))
+(define (cond-else-clause? clause)
+  (eq? (cond-predicate clause) 'else))
+
+(define (cond-predicate clause) (car clause))
+(define (cond-actions clause) (cdr clause))
+(define (cond->if exp)
+  (expand-clauses (cond-clauses exp)))
+
+; new added
+(define (cond-arrow? list) (tagged-list? list '=>))
+(define cond-arrow-recipient cadr)
+
+(define (parse-clause clause)
+  (let ((value (cond-predicate first))
+        (actions (cond-actions clause)))
+    (if (cond-arrow? actions)
+        (list (cond-arrow-recipient actions) value) ; or ((cond-arrow-recipient actions) value)
+        (sequence->exp actions)
+    )))
+
+(define (expand-clauses clauses)
+  (if (null? clauses)
+      'false
+      (let ((first (car clauses))
+            (rest (cdr clauses)))
+        (if (cond-else-clause? first)
+            (if (null? rest)
+                (sequence->exp (cond-actions first))
+                (error "ELSE clause isn't last -- COND->IF"
+                       clauses))
+            (make-if (cond-predicate first)
+                     (parse-clause first)                   ; changed!!!
+                     (expand-clauses rest))
+        ))))
+; Why not use ((cond-arrow-recipient actions) value) to replace? 
+; ((cond-arrow-recipient actions) value) will be executed during evaluating make-if syntax
+; As a result, <recipient> is invoked before checking <test> in (<test> => <recipient>)
 ```
