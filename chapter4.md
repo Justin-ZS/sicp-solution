@@ -52,7 +52,7 @@
 ; (define (application? exp) (pair? exp))
 ; so the application? clause will be execute
 ; (apply (eval (operator exp) env)
-                (list-of-values (operands exp) env)))
+;                (list-of-values (operands exp) env))
 ; equals
 ; (apply (eval define env) ...)
 ; (eval define env) will throw an exception
@@ -64,7 +64,7 @@
 ```
 
 ### 4.3
-self-evaluating和variable不是复杂表达式，不需要改变
+self-evaluating和variable不是复杂表达式，不需要改变
 
 ```scheme
 (define eval-type car)
