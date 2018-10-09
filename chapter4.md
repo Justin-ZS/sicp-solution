@@ -89,6 +89,54 @@ self-evaluating和variable不是复杂表达式，不需要改变
                 (list-of-values (operands exp) env)))
         (else
           (error "Unknown expression type -- EVAL" exp))))
+```
 
+### 4.4
+```scheme
+(define and-clauses cdr)
+(define or-clauses cdr)
 
+(define fst-clause car)
+(define rest-clauses cdr)
+(define empty-clauses? null?)
+
+(put 'and (lambda (exp env) (eval-and (and-clauses exp) env '#t)))
+(define (eval-and clauses env val)
+  (if (empty-clauses? clauses)
+      val
+      (let ((cur (eval (fst-clause clauses) env)))
+        (if (true? cur) (eval-and (rest-clauses clauses) env cur) '#f)
+      )
+  )
+)
+
+(put 'or (lambda (exp env) (eval-or (or-clauses exp) env)))
+(define (eval-or clauses env)
+  (if (empty-clauses? clauses)
+      '#f
+      (let ((cur (eval (fst-clause clauses) env)))
+        (if (true? cur) cur (eval-or (rest-clauses clauses) env))
+      )
+  )
+)
+
+; derived expressions
+
+(put 'and (lambda (exp env) (eval (and->if (and-clauses exp) '#t) env)))
+(define (and->if clauses val)
+  (if (empty-clauses? clauses)
+    val
+    (make-if (fst-clause clauses)
+             (and->if (rest-clauses clauses) (fst-clause clauses))
+             '#f
+    )))
+
+(put 'or (lambda (exp env) (eval (or->if (or-clauses exp)) env)))
+(define (or->if clauses)
+  (if (empty-clauses? clauses)
+      '#f
+      (make-if (fst-clause clauses)
+               (fst-clause clauses)
+               (or->if (rest-clauses clauses))
+      )))
 ```
