@@ -180,3 +180,60 @@ self-evaluating和variable不是复杂表达式，不需要改变
 ; ((cond-arrow-recipient actions) value) will be executed during evaluating make-if syntax
 ; As a result, <recipient> is invoked before checking <test> in (<test> => <recipient>)
 ```
+
+### 4.6
+```scheme
+(define let-parameters cadr)
+(define let-body caddr)
+(define (parameters-argus parameters) (map car parameters))
+(define (parameters-values) (map cadr parameters))
+
+(define (let-combination exp)
+  (let ((parameters (let-parameters exp)))
+    (cons (make-lambda (parameters-argus parameters)
+                  (let-body exp))
+      (parameters-values parameters))))
+
+(define (let? exp) (tagged-list? exp 'let))
+
+(define (eval exp env)
+  (cond ; ...
+        ((let? exp) (eval (let-combination exp) env))
+        ((application? exp)
+         (apply (eval (operator exp) env)
+                (list-of-values (operands exp) env)))
+        (else
+         (error "Unknown expression type -- EVAL" exp))))
+```
+
+### 4.7
+```scheme
+(define first-parameter car)
+(define rest-parameters cdr)
+(define empty-parameters? null?)
+
+(define (make-let parameters body) (list 'let parameters body))
+
+(define (let*->nested-lets exp)
+  (define (nest-let parameters body)
+    (make-let
+      (list (first-parameter parameters))
+      (if (empty-parameters? (rest-parameters parameters))
+          body
+          (nest-let (rest-parameters parameters) body)
+      )))
+  (nest-let (let-parameters exp) (let-body exp)))
+
+; action
+(eval (let*->nested-lets exp) env)
+; derived expressions is enough
+
+(let*->nested-lets '(let* ((x 3) (y (+ x 2)) (z (+ x y 5))) (* x z)))
+; => (let ((x 3))
+;      (let ((y (+ x 2)))
+;        (let ((z (+ x y 5)))
+;          ((* x z)))))
+ 
+```
+
+
