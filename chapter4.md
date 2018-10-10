@@ -184,18 +184,21 @@ self-evaluating和variable不是复杂表达式，不需要改变
 ### 4.6
 ```scheme
 (define let-parameters cadr)
-(define let-body caddr)
+(define let-body cddr)
 (define (parameters-argus parameters) (map car parameters))
-(define (parameters-values) (map cadr parameters))
+(define (parameters-values parameters) (map cadr parameters))
 
 (define (let-combination exp)
   (let ((parameters (let-parameters exp)))
-    (cons (make-lambda (parameters-argus parameters)
-                  (let-body exp))
+    (cons (make-lambda (parameters-argus parameters) (let-body exp))
       (parameters-values parameters))))
+; test
+(let-combination '(let ((a 1) (b 2)) (+ a b)))
+; => ((lambda (a b) (+ a b)) 1 2)
+((lambda (a b) (+ a b)) 1 2)
+; => 3
 
 (define (let? exp) (tagged-list? exp 'let))
-
 (define (eval exp env)
   (cond ; ...
         ((let? exp) (eval (let-combination exp) env))
@@ -219,7 +222,7 @@ self-evaluating和variable不是复杂表达式，不需要改变
     (make-let
       (list (first-parameter parameters))
       (if (empty-parameters? (rest-parameters parameters))
-          body
+          (sequence->exp body) ; body may be a sequence expression
           (nest-let (rest-parameters parameters) body)
       )))
   (nest-let (let-parameters exp) (let-body exp)))
@@ -228,12 +231,56 @@ self-evaluating和variable不是复杂表达式，不需要改变
 (eval (let*->nested-lets exp) env)
 ; derived expressions is enough
 
+; test
 (let*->nested-lets '(let* ((x 3) (y (+ x 2)) (z (+ x y 5))) (* x z)))
-; => (let ((x 3))
-;      (let ((y (+ x 2)))
-;        (let ((z (+ x y 5)))
-;          ((* x z)))))
- 
+; => (let ((x 3)) (let ((y (+ x 2))) (let ((z (+ x y 5))) (* x z))))
+
+(let ((x 3)) (let ((y (+ x 2))) (let ((z (+ x y 5))) (* x z))))
+; => 39 
 ```
 
+### 4.8
+```scheme
+(let fib-iter ((a 1)
+               (b 0)
+               (count n))
+  (if (= count 0)
+      b
+      (fib-iter (+ a b) a (- count 1)))
+)
+; equals
+(let ((a 1)
+      (b 0)
+      (count n))
+    (define fib-iter (lambda (a b count) (if (= count 0) b (fib-iter (+ a b) a (- count 1)))))
+    (fib-iter a b count))
+; solution
+(define (named-let? exp) (not (list? (let-parameters exp))))
+(define named-let-name cadr)
+(define named-let-parameters caddr)
+(define named-let-body cdddr)
+(define (make-define name body) (list 'define name body))
 
+(define (let-combination exp)
+  (if (named-let? exp)
+      (let ((name       (named-let-name exp))
+            (parameters (named-let-parameters exp))
+            (body       (named-let-body exp)))
+        (make-let parameters
+                  (sequence->exp
+                    (list (make-define name (make-lambda (parameters-argus parameters) body))
+                          (cons name (parameters-argus parameters))))))
+      (let ((parameters (let-parameters exp)))
+        (cons (make-lambda (parameters-argus parameters) (let-body exp))
+          (parameters-values parameters)))
+  )
+)
+; test
+(let-combination '(let fib-iter ((a 1) (b 0) (count n)) (if (= count 0) b (fib-iter (+ a b) a (- count 1)))))
+; => (let ((a 1) (b 0) (count n)) (begin (define fib-iter (lambda (a b count) (if (= count 0) b (fib-iter (+ a b) a (- count 1))))) (fib-iter a b count)))
+(define (fib n)
+  (let ((a 1) (b 0) (count n)) (begin (define fib-iter (lambda (a b count) (if (= count 0) b (fib-iter (+ a b) a (- count 1))))) (fib-iter a b count))) ; copy previous output
+)
+(fib 10)
+; => 55
+```
