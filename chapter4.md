@@ -372,6 +372,8 @@ n
       (set-cdr! frame new-frame-cdr)
   ))
 
+; keep lookup-variable-value unchanged
+
 (define (set-variable-value! var val env)
   (define (env-loop env)
     (define (scan items)
