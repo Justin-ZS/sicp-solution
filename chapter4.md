@@ -275,6 +275,7 @@ self-evaluating和variable不是复杂表达式，不需要改变
           (parameters-values parameters)))
   )
 )
+
 ; test
 (let-combination '(let fib-iter ((a 1) (b 0) (count n)) (if (= count 0) b (fib-iter (+ a b) a (- count 1)))))
 ; => (let ((a 1) (b 0) (count n)) (begin (define fib-iter (lambda (a b count) (if (= count 0) b (fib-iter (+ a b) a (- count 1))))) (fib-iter a b count)))
@@ -283,4 +284,69 @@ self-evaluating和variable不是复杂表达式，不需要改变
 )
 (fib 10)
 ; => 55
+```
+
+### 4.9
+```scheme
+(define n 0)
+(define sum 0)
+; (while (< n 5) (set! sum (+ n sum)) (set! n (+ n 1)))
+
+(define while-predicate cadr)
+(define while-body cddr)
+(define (while->recurse exp)
+  (let ((predicate (while-predicate exp))
+        (body      (while-body exp)))
+       (make-if predicate
+                (make-begin (cons (sequence->exp body) (list exp)))
+                '#f
+       )))
+
+; can't add test since the loop is iterated in eval procedure
+(while->recurse '(while (< n 5) (set! sum (+ n sum)) (set! n (+ n 1))))
+; =>
+;  (if (< n 5)
+;      (begin
+;        (begin (set! sum (+ n sum))
+;               (set! n (+ n 1)))
+;        (while (< n 5) (set! sum (+ n sum)) (set! n (+ n 1))))
+;      #f)
+
+; Another solution!!!
+
+; while expression:(while <predicate> <body>) equals
+;((lambda ()
+;   (define while-iter
+;     (lambda ()
+;       (if <predicate>
+;           (begin
+;             (begin <body>)
+;             (while-iter))
+;           'false))
+;   )
+;   (while-iter)))
+
+(define (while->combination exp)
+  (let ((predicate (while-predicate exp))
+        (body      (while-body exp))
+        (while-iter 'while-iter))
+       (list (make-lambda '()
+          (list (make-define while-iter
+                (make-lambda '()
+                  (list (make-if predicate
+                                 (make-begin (cons (sequence->exp body) (list (list while-iter))))
+                                 'false))))
+                (list while-iter)))
+        )
+  ))
+
+; test
+(while->combination '(while (< n 5) (set! sum (+ n sum)) (set! n (+ n 1))))
+; => ((lambda () (define while-iter (lambda () (if (< n 5) (begin (begin (set! sum (+ n sum)) (set! n (+ n 1))) (while-iter)) false))) (while-iter)))
+((lambda () (define while-iter (lambda () (if (< n 5) (begin (begin (set! sum (+ n sum)) (set! n (+ n 1))) (while-iter)) false))) (while-iter)))
+; => #f
+sum
+; => 10
+n
+; => 5
 ```
