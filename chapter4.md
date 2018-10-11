@@ -350,3 +350,12 @@ sum
 n
 ; => 5
 ```
+
+### 4.10
+```scheme
+(define (definition? exp)
+  (tagged-list? exp 'def))
+; Change the definition? function will make below expression work
+(def n 0)
+```
+
