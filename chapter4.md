@@ -509,3 +509,41 @@ env
 env
 ; => (((c a b) 4 2 3) ((a b c) 4 5 7))
 ```
+
+### 4.13
+```scheme
+(define (make-unbound! var env) 
+  (let ((frame (first-frame env)))
+    (define (scan vars vals is-fst)
+      (if (null? vars)
+          '#f
+          (let ((next-vars (cdr vars))
+                (next-vals (cdr vals)))
+            (cond ((and (eq? var (car vars)) is-fst)
+                    (set-car! frame (cdr vars))
+                    (set-cdr! frame (cdr vals))
+                    '#t)
+                  ((eq? var (car vars)) '#t)
+                  ((scan next-vars next-vals '#f)
+                    (set-cdr! vars (cdr next-vars))
+                    (set-cdr! vals (cdr next-vals))
+                    '#f)
+                  (else '#f)
+            ))))
+    (scan (frame-variables frame)
+          (frame-values frame)
+          '#t))
+)
+
+; test
+env
+; => (((a b) 2 3) ((a b c) 4 5 7))
+(make-unbound! 'a env)
+env
+; => (((b) 3) ((a b c) 4 5 7))
+(make-unbound! 'c env)
+env
+; => (((b) 3) ((a b c) 4 5 7))
+
+; this implementation just unbounds the variable in first frame
+```
