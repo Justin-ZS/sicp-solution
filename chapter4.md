@@ -398,3 +398,114 @@ n
             (else (scan (cdr items)))))
     (scan frame)))
 ```
+
+### 4.12
+我好像做复杂了，参考JS的[迭代器](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols
+)多抽象了一层.  
+其实直接把三个函数体内重复的部分抽象出一层就可以了
+```scheme
+(define (make-iterable empty? next get-value obj)
+  (define (invalid-next) (error "No next iterable"))
+  (define (invalid-value) (error "No value"))
+  (if (empty? obj)
+      (list invalid-next invalid-value (lambda () (empty? obj)))
+      (let ((next-obj (next obj))
+            (value    (get-value obj)))
+        (define (next-iterable) (make-iterable empty? next get-value next-obj))
+        (define (current-value) value)
+        (define (done?) (empty? obj))
+        (list next-iterable current-value done?)
+      )
+  )
+)
+(define iterable-next car)
+(define iterable-value cadr)
+(define iterable-done caddr)
+
+(define (not-found? val) (eq? 'NOT-FOUND val))
+(define (find-iterable pred? iterable)
+  (define (iter iterable)
+    (let ((done? (iterable-done iterable))
+          (get-value (iterable-value iterable))
+          (next (iterable-next iterable)))
+      (cond ((done?) 'NOT-FOUND)
+            ((pred? (get-value)) (get-value))
+            (else (find-iterable pred? (next)))
+      )
+    ))
+  (iter iterable))
+
+; convert data to iterable
+(define (make-env-iterable env)
+  (define (empty? env) (eq? env the-empty-environment))
+  (make-iterable empty? enclosing-environment first-frame env))
+
+(define (make-frame-iterable frame)
+  (define format cons)
+  (define formated-frame (format (frame-variables frame) (frame-values frame)))
+  (define (next formated) (format (cdr (car formated)) (cdr (cdr formated))))
+  (define (empty? formated) (null? (car formated)))
+  (define (get-value formated) formated)
+  (make-iterable empty? next get-value formated-frame))
+(define (frame-iterable-item-var item) (car (car item)))
+(define (frame-iterable-item-val item) (car (cdr item)))
+
+; rewrite the three procedures
+(define (search-frame? var fn frame)
+  (define frame-iterable (make-frame-iterable frame))
+  (define (same? val) (eq? var (frame-iterable-item-var val)))
+  (let ((found (find-iterable same? frame-iterable)))
+    (cond ((not-found? found) '#f)
+          (else (fn found) '#t)))
+)
+
+(define (lookup-variable-value var env)
+  (define result 0)
+  (define (set-result! v) (set! result v))
+  (define env-iterable (make-env-iterable env))
+  (define (pred? frame) (search-frame? var set-result! frame))
+  (let ((found (find-iterable pred? env-iterable)))
+    (if (not-found? found)
+        (error "Unbound variable" var)
+        (frame-iterable-item-val result)))
+)
+(define (set-variable-value! var val env)
+  (define (set-val! frame) (set-car! (cdr frame) val))
+  (define env-iterable (make-env-iterable env))
+  (define (pred? frame) (search-frame? var set-val! frame))
+  (let ((found (find-iterable pred? env-iterable)))
+    (if (not-found? found)
+        (error "Unbound variable -- SET!" var)))
+)
+
+(define (define-variable! var val env)
+  (define (set-val! frame) (set-car! (cdr frame) val))
+  (let ((frame (first-frame env)))
+    (define result (search-frame? var set-val! frame))
+    (if (not result)
+        (add-binding-to-frame! var val frame))
+  ))
+
+; test
+(define frame1 (make-frame '(a b) '(1 2)))
+(define frame2 (make-frame '(a b c) '(4 5 6)))
+(define env (list frame1 frame2))
+; (((a b) 1 2) ((a b c) 4 5 6))
+
+(lookup-variable-value 'c env)
+; => 6
+(lookup-variable-value 'b env)
+; => 2
+(set-variable-value! 'a 2 env)
+env
+; => (((a b) 2 2) ((a b c) 4 5 6))
+(set-variable-value! 'c 7 env)
+env
+; => (((a b) 2 2) ((a b c) 4 5 7))
+(define-variable! 'b 3 env)
+env
+; => (((a b) 2 3) ((a b c) 4 5 7))
+(define-variable! 'c 4 env)
+env
+; => (((c a b) 4 2 3) ((a b c) 4 5 7))
+```
