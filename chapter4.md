@@ -359,3 +359,40 @@ n
 (def n 0)
 ```
 
+### 4.11
+```scheme
+; Represent a frame as a list of bindings
+(define (make-frame variables values)
+  (map cons variables values))
+(define (frame-variables frame) (map car frame))
+(define (frame-values frame) (map cdr frame))
+
+(define (add-binding-to-frame! var val frame)
+  (let ((new-frame-cdr (cons (cons var val) (cdr frame))))
+      (set-cdr! frame new-frame-cdr)
+  ))
+
+(define (set-variable-value! var val env)
+  (define (env-loop env)
+    (define (scan items)
+      (cond ((null? items)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car (car items)))
+             (set-cdr! (car items) val))
+            (else (scan (cdr items)))))
+    (if (eq? env the-empty-environment)
+        (error "Unbound variable -- SET!" var)
+        (let ((frame (first-frame env)))
+          (scan frame))))
+  (env-loop env))
+
+(define (define-variable! var val env)
+  (let ((frame (first-frame env)))
+    (define (scan items)
+      (cond ((null? items)
+             (add-binding-to-frame! var val frame))
+            ((eq? var (car (car items)))
+             (set-cdr! (car items) val))
+            (else (scan (cdr items)))))
+    (scan frame)))
+```
