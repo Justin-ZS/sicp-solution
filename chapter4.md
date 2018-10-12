@@ -651,3 +651,30 @@ A:  The enclosing environment of **transformed program's environment** is the en
 
 Q: *Design a way to make the interpreter implement the ``simultaneous'' scope rule for internal definitions without constructing the extra frame.*  
 A: Consider the [variables-hoisting](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting) behavior in JavaScript
+
+### 4.18
+```scheme
+; Q: Will this procedure work if internal definitions are scanned out as shown in this exercise?
+
+; example in the text
+(lambda <vars>
+  (define u <e1>)
+  (define v <e2>)
+  <e3>)
+; an alternative strategy
+(lambda <vars>
+  (let ((u '*unassigned*)
+        (v '*unassigned*))
+    (let ((a <e1>)
+          (b <e2>))
+      (set! u a)
+      (set! v b))
+    <e3>))
+; if v is called at <e1> and u is called at <e2>
+; It doesn't work since u and v are still unassigned when <e1> and <e2> are evaluated
+
+; Q: What if they are scanned out as shown in the text?
+; It works.
+; (delay <exp>) is syntactic sugar for (lambda () <exp>)
+; As a result, evaluating (delay dy) does't led to evaluate `dy`
+```
