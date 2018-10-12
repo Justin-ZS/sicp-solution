@@ -587,3 +587,57 @@ env
 ; as a result, the outer (try try) will run forever
 ; it becomes a paradox
 ```
+
+### 4.16
+```scheme
+; a
+(define unassigned '*unassigned*)
+(define (unassigned? val) (eq? val unassigned))
+(define (lookup-variable-value var env)
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars))
+             (if (unassigned? (car vals))
+                 (error "This is a not-yet-assigned variable" var)
+                 (car vals)))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+        (error "Unbound variable" var)
+        (let ((frame (first-frame env)))
+          (scan (frame-variables frame)
+                (frame-values frame)))))
+  (env-loop env))
+
+; b
+(define (scan-out-defines body)
+  (let ((defs           (filter definition? body))
+        (set-unassigned (lambda (var) (list (definition-variable var) 'unassigned)))
+        (replace        (lambda (exp) (if (definition? exp) (cons 'set! (cdr exp)) exp))))
+
+    (define parameters (map set-unassigned defs))
+    (define new-body (sequence->exp (map replace body)))
+
+    (make-let parameters new-body)
+  ))
+
+; test
+(lambda () (define a 1) (define b 2) (+ a b))
+; body: '((define a 1) (define b 2) (+ a b))
+(scan-out-defines '((define a 1) (define b 2) (+ a b)))
+; => (let ((a unassigned) (b unassigned)) (begin (set! a 1) (set! b 2) (+ a b)))
+; try it!
+((lambda ()
+  (let ((a unassigned) (b unassigned)) (begin (set! a 1) (set! b 2) (+ a b)))
+))
+; => 3
+
+; c
+(define (make-procedure parameters body env)
+  (list 'procedure parameters (scan-out-defines body) env))
+
+; `make-procedure` would be called at eval. (define function)
+; `procedure-body` would be called at apply. (call function)
+; A function can only be defined once, but may be called many times.
+```
