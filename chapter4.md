@@ -254,6 +254,7 @@ self-evaluating和variable不是复杂表达式，不需要改变
       (count n))
     (define fib-iter (lambda (a b count) (if (= count 0) b (fib-iter (+ a b) a (- count 1)))))
     (fib-iter a b count))
+
 ; solution
 (define (named-let? exp) (not (list? (let-parameters exp))))
 (define named-let-name cadr)
@@ -546,4 +547,43 @@ env
 ; => (((b) 3) ((a b c) 4 5 7))
 
 ; this implementation just unbounds the variable in first frame
+```
+
+### 4.14
+```scheme
+; Consider calling (map + '(1 2 3) '(1 2 3))
+; it work fine in native environment
+(map + '(1 2 3) '(1 2 3))
+; => (2 4 6)
+; but if we call it in M-Eval environment
+; all primitive procedures in M-Eval are tagged with 'primitive symbol
+(define (primitive-procedure-objects)
+  (map (lambda (proc) (list 'primitive (cadr proc))) ; this line
+       primitive-procedures))
+; so the + will be parsed to something like ('primitive <native produce>).
+; ('primitive <native + produce>) is not applicable !!!
+
+; custom defined function will work fine.
+```
+
+### 4.15
+这是著名的[停机问题](https://zh.wikipedia.org/wiki/%E5%81%9C%E6%9C%BA%E9%97%AE%E9%A2%98)
+```scheme
+; it is impossible to write a procedure halts? that correctly determines whether p halts on a for any procedure p and object a?
+; the key point is `any procedure p and object a`
+
+(define (try p)
+  (if (halts? p p)
+      (run-forever)
+      'halted))
+; if we call (try try)
+(try try)    ; step 1  
+; equals
+(if (halts? try try) ; step 2
+    (run-forever)
+    'halted)
+; in step 2, halts? will determines (try try)
+; if (halts? try try) return true, which means internal (try try) will return a value. (not run-forever)
+; as a result, the outer (try try) will run forever
+; it becomes a paradox
 ```
