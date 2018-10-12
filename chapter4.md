@@ -641,3 +641,13 @@ env
 ; `procedure-body` would be called at apply. (call function)
 ; A function can only be defined once, but may be called many times.
 ```
+
+### 4.17
+Q: *Why is there an extra frame in the transformed program?*   
+A: Transformed program add a `let` expression, it will create a new frame.  
+
+Q: *Why this difference in environment structure can never make a difference in the behavior of a correct program?*  
+A:  The enclosing environment of **transformed program's environment** is the environment of **sequential program**
+
+Q: *Design a way to make the interpreter implement the ``simultaneous'' scope rule for internal definitions without constructing the extra frame.*  
+A: Consider the [variables-hoisting](https://developer.mozilla.org/en-US/docs/Glossary/Hoisting) behavior in JavaScript
