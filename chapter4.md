@@ -678,3 +678,12 @@ A: Consider the [variables-hoisting](https://developer.mozilla.org/en-US/docs/Gl
 ; (delay <exp>) is syntactic sugar for (lambda () <exp>)
 ; As a result, evaluating (delay dy) does't led to evaluate `dy`
 ```
+
+### 4.19
+```scheme
+; I support Alyssa's viewpoint.
+; Alyssa's viewpoint is similar to the behavior of `let` or `const` in JavaScript
+
+; Q: Can you devise a way to implement internal definitions so that they behave as Eva prefers?
+; No, it is too hard to implement for me.
+```
