@@ -567,7 +567,7 @@ env
 ```
 
 ### 4.15
-这是著名的[停机问题](https://zh.wikipedia.org/wiki/%E5%81%9C%E6%9C%BA%E9%97%AE%E9%A2%98)
+这是著名的[停机问题](https://zh.wikipedia.org/wiki/%E5%81%9C%E6%9C%BA%E9%97%AE%E9%A2%98)
 ```scheme
 ; it is impossible to write a procedure halts? that correctly determines whether p halts on a for any procedure p and object a?
 ; the key point is `any procedure p and object a`
@@ -585,7 +585,7 @@ env
 ; in step 2, halts? will determines (try try)
 ; if (halts? try try) return true, which means internal (try try) will return a value. (not run-forever)
 ; as a result, the outer (try try) will run forever
-; it becomes a paradox
+; it becomes a paradox
 ```
 
 ### 4.16
