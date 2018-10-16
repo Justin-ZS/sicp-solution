@@ -672,11 +672,13 @@ A: Consider the [variables-hoisting](https://developer.mozilla.org/en-US/docs/Gl
     <e3>))
 ; if v is called at <e1> and u is called at <e2>
 ; It doesn't work since u and v are still unassigned when <e1> and <e2> are evaluated
+; In this case, <e2>: (stream-map f y) u: y
 
 ; Q: What if they are scanned out as shown in the text?
 ; It works.
 ; (delay <exp>) is syntactic sugar for (lambda () <exp>)
-; As a result, evaluating (delay dy) does't led to evaluate `dy`
+; as a result, evaluating (delay dy) does't led to evaluate `dy`
+; and before defining `dy`, `y` has been defined.
 ```
 
 ### 4.19
@@ -686,4 +688,51 @@ A: Consider the [variables-hoisting](https://developer.mozilla.org/en-US/docs/Gl
 
 ; Q: Can you devise a way to implement internal definitions so that they behave as Eva prefers?
 ; No, it is too hard to implement for me.
+```
+
+### 4.20
+```scheme
+;;;; a
+
+(letrec ((fact
+          (lambda (n)
+            (if (= n 1)
+                1
+                (* n (fact (- n 1)))))))
+  (fact 10))
+; equals
+(let ((fact '*unassigned*))
+  (set! fact (lambda (n) (if (= n 1) 1 (* n (fact (- n 1))))))
+  (fact 10)
+)
+; => 3628800
+
+(define (letrec->let exp)
+  (let ((parameters (let-parameters exp))
+        (body       (let-body exp)))
+    (define unassigned-vars
+      (map (lambda (var) (list var ''*unassigned*))
+           (parameters-argus parameters)))
+    (define set-vars
+      (map (lambda (var val) (list 'set! var val))
+           (parameters-argus parameters)
+           (parameters-values parameters)))
+    (make-let unassigned-vars
+      (make-begin (cons (sequence->exp set-vars) body)))
+  ))
+
+(define (letrec? exp) (tagged-list? exp 'letrec))
+
+; action in eval cond:
+; ((letrec? exp) (eval (letrec->let exp) env))
+
+; test
+(letrec ((fact (lambda (n) (if (= n 1) 1 (* n (fact (- n 1))))))) (fact 10))
+; => (let ((fact (quote *unassigned*))) (begin (set! fact (lambda (n) (if (= n 1) 1 (* n (fact (- n 1)))))) (fact 10)))
+(let ((fact (quote *unassigned*))) (begin (set! fact (lambda (n) (if (= n 1) 1 (* n (fact (- n 1)))))) (fact 10)))
+; => 3628800
+
+;;;;  b
+Consider the 'letrec' procedure before.
+If we use 'let' to instead of inner 'define', recurse function can't work well.
 ```
