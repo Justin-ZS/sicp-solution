@@ -736,3 +736,35 @@ A: Consider the [variables-hoisting](https://developer.mozilla.org/en-US/docs/Gl
 Consider the 'letrec' procedure before.
 If we use 'let' to instead of inner 'define', recurse function can't work well.
 ```
+
+### 4.21
+```scheme
+;;;; a
+; normal fib
+(define (fib n)
+  (cond ((= n 0) 0)
+        ((= n 1) 1)
+        (else (+ (fib (- n 1)) (fib (- n 2))))
+  ))
+(fib 10)
+; new one
+((lambda (n)
+  ((lambda (fn) (fn fn n))
+   (lambda (fn n)
+    (cond ((= n 0) 0)
+          ((= n 1) 1)
+          (else (+ (fn fn (- n 1)) (fn fn (- n 2))))
+    )))
+ ) 10)
+
+;;;; b
+
+(define (f x)
+  ((lambda (even? odd?)
+     (even? even? odd? x))
+   (lambda (ev? od? n)
+     (if (= n 0) true (od? ev? od? (- n 1))))
+   (lambda (ev? od? n)
+     (if (= n 0) false (ev? ev? od? (- n 1))))))
+```
+
