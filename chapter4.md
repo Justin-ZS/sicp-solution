@@ -857,3 +857,16 @@ Then, the value of `factorial` is an *analyzed* function.
 ; Everything is clear, it become a recursion
 ; No analyze during the evaluation stage!
 ```
+
+
+### 4.22
+```scheme
+(define (analyze-let exp) (analyze (let-combination exp)))
+```
+
+### 4.23
+```scheme
+; In Alyssa's version, the procs are traversed at evaluation time.
+; In the original version, the procs are traversed at analyze time.
+```
+
