@@ -775,6 +775,7 @@ If we use 'let' to instead of inner 'define', recurse function can't work well.
 (eval '(define (factorial n) (if (= n 1) 1 (* (factorial (- n 1)) n))) env)
 
 ; d = '(define (factorial n) (if (= n 1) 1 (* (factorial (- n 1)) n)))
+; so it equals
 ((analyze-definition d) env)
 
 ; in analyze-definition
@@ -808,7 +809,7 @@ If we use 'let' to instead of inner 'define', recurse function can't work well.
 ; equals
 (lambda (env) (lookup-variable-value exp env))
 ```
-After all, the value of `factorial` is an *analyzed* function.
+Then, the value of `factorial` is an *analyzed* function.
 ```scheme
 ; Evaluation flow
 
@@ -828,7 +829,7 @@ After all, the value of `factorial` is an *analyzed* function.
 
 ; analyzed-body = (procedure-body <analyzed factorial>)
 ; env2 = the extended environment
-; equals
+; so it equals
 (analyzed-body env2)
 
 ; What is the analyzed-body?
@@ -840,13 +841,19 @@ After all, the value of `factorial` is an *analyzed* function.
 (if (true? (pproc env)) ; (= n 0)
     (cproc env)   ; 1
     (aproc env)) ; (* (factorial (- n 1)) n)
-; n is 2, so which equals
 
+; n is 2, so it equals
 (aproc env2)
 
 ; What is the aproc?
 (analyze-application '(* (factorial (- n 1)) n))
 
-; we meet 'factorial' here again, it become a recursion!
-; no analyze during the evaluation stage!
+; so it equals
+((analyze-application '(* (factorial (- n 1)) n)) env2)
+
+; begin from ((analyze-application '(factorial 2)) env)
+; end with ((analyze-application '(* (factorial (- n 1)) n)) env2)
+
+; Everything is clear, it become a recursion
+; No analyze during the evaluation stage!
 ```
