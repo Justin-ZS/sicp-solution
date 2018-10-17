@@ -768,3 +768,85 @@ If we use 'let' to instead of inner 'define', recurse function can't work well.
      (if (= n 0) false (ev? ev? od? (- n 1))))))
 ```
 
+### Separating Analysis from Execution  
+```scheme
+; Analyze flow
+
+(eval '(define (factorial n) (if (= n 1) 1 (* (factorial (- n 1)) n))) env)
+
+; d = '(define (factorial n) (if (= n 1) 1 (* (factorial (- n 1)) n)))
+((analyze-definition d) env)
+
+; in analyze-definition
+; (analyze (definition-value exp)) equals
+(analyze '(lambda (n) (if ...)))
+
+; equals
+(analyze-lambda '(lambda (n) ...))
+; the returned function will be executed and bound to 'factorial' variable
+
+; in analyze-lambda
+; (analyze-sequence (lambda-body exp)) equals
+(analyze-if '(if (= n 1)
+                 1
+                 (* (factorial (- n 1)) n)))
+; the returned function will become the body of 'factorial'
+
+; in analyze-if
+; (analyze (if-alternative exp))
+(analyze-application '(* (factorial (- n 1)) n))
+; the returned function will be stored in 'aproc'
+
+; in analyze-application
+; (map analyze (operands exp)) contains
+(analyze-application '(factorial (- n 1)))
+
+; in analyze-application
+; (analyze (operator exp)) equals
+(analyze-variable ‘factorial)
+
+; equals
+(lambda (env) (lookup-variable-value exp env))
+```
+After all, the value of `factorial` is an *analyzed* function.
+```scheme
+; Evaluation flow
+
+(eval '(factorial 2) env)
+
+; equals
+((analyze-application '(factorial 2)) env)
+
+; equals
+(execute-application <analyzed factorial> '(2))
+
+; equals
+((procedure-body <analyzed factorial>)
+  (extend-environment (procedure-parameters <analyzed factorial>)
+                      '(2)
+                      (procedure-environment <analyzed factorial>)))
+
+; analyzed-body = (procedure-body <analyzed factorial>)
+; env2 = the extended environment
+; equals
+(analyzed-body env2)
+
+; What is the analyzed-body?
+(analyze-if '(if (= n 1)
+                 1
+                 (* (factorial (- n 1)) n)))
+
+; so (analyzed-body env2) equals
+(if (true? (pproc env)) ; (= n 0)
+    (cproc env)   ; 1
+    (aproc env)) ; (* (factorial (- n 1)) n)
+; n is 2, so which equals
+
+(aproc env2)
+
+; What is the aproc?
+(analyze-application '(* (factorial (- n 1)) n))
+
+; we meet 'factorial' here again, it become a recursion!
+; no analyze during the evaluation stage!
+```
