@@ -933,7 +933,7 @@ count
 2
 ```
 
-###4.28
+### 4.28
 ```scheme
 ; If `Eval` doesn't force the operator, the operator may be a thunk and passed into `apply`.
 ; so `apply` will throw an error since a thunk is neither a primitive-procedure nor compound-procedure.
@@ -941,4 +941,41 @@ count
 ; example
 (define (compose f g) (lambda (x) (f (g n))))
 ; if 'f' or 'g' is a thunk, an error will occur when call the composed procedure
+```
+
+
+### 4.29
+```scheme
+; consider Fibonacci number
+(define (fib n)
+  (cond ((= n 0) 0)
+        ((= n 1) 1)
+        (else (+ (fib (- n 1)) (fib (- n 2))))
+  ))
+; in this procedure, (fib n) will create a thunk of n
+; it will speed up calculating the next number
+
+; no memoize
+(define (square x)
+  (* x x))
+;;; L-Eval input:
+(square (id 10))
+;;; L-Eval value:
+100
+;;; L-Eval input:
+count
+;;; L-Eval value:
+2
+
+; with memoize
+(define (square x)
+  (* x x))
+;;; L-Eval input:
+(square (id 10))
+;;; L-Eval value:
+100
+;;; L-Eval input:
+count
+;;; L-Eval value:
+1 ; difference
 ```
