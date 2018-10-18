@@ -909,3 +909,26 @@ Then, the value of `factorial` is an *analyzed* function.
 
 ; if 'unless' is a procedure rather than a syntax, it can be used as an expression.
 ```
+
+### 4.27
+```scheme
+; There is only one 'delay-it' in eval-apply loop, that is in appling compound-procedure
+
+(id 10) ; => call `id`, count + 1
+(id (id 10)) ; => the inner (id 10) will become a thunk, call outer `id`, count + 1
+; so the value of 'w' is a thunk of (id 10)
+
+(define w (id (id 10)))
+;;; L-Eval input:
+count
+;;; L-Eval value:
+1 ; comes from calling outer 'id'.
+;;; L-Eval input:
+w ; it force the thunk of (id 10), count + 1, return 10
+;;; L-Eval value:
+10
+;;; L-Eval input:
+count
+;;; L-Eval value:
+2
+```
