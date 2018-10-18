@@ -979,3 +979,61 @@ count
 ;;; L-Eval value:
 1 ; difference
 ```
+
+### 4.30
+```scheme
+;;;; a 
+
+(for-each (lambda (x) (newline) (display x))
+          (list 57 321 88))
+
+; <lazy-lambda>: (delay-it (lambda (x) (newline) (display x) env)
+; <lazy-list>: (delay-it (list 57 321 88) env)
+; equals
+(if (null? <lazy-list>) ; forced due to 'null?'
+    'done
+    (begin (<lazy-lambda> (car <lazy-list>))
+           (for-each <lazy-lambda> (cdr <lazy-list>))))
+
+; list is not null
+; ((begin? exp) (eval-sequence (begin-actions exp) env))
+(eval-sequence ((<lazy-lambda> (car <lazy-list>)) (for-each <lazy-lambda> (cdr <lazy-list>)) env)
+; in original `eval-sequence`, (eval (first-exp exps) env)
+(eval (<lazy-lambda> (car <lazy-list>)) env)
+
+; force <lazy-lambda> due to application operator
+; <lazy-car>: (delay-it (car <lazy-list>) env)
+(display <lazy-car>) ; forced by primitive procedue: display
+
+; <lazy-list> will be forced too because `force-it` is a recurse procedure
+(actual-value (car <lazy-list>) env)
+
+(car (list 57 321 88))
+; => 55
+
+; Q: Why the `for-each` example works?
+; A: It use `display` to show number. This primitive procedure will force the given thunk.
+
+
+;;;; b
+
+; with original eval-sequence
+(p1 1)
+; => (1 2)
+(p2 1)
+; => 1
+; the inner thunk won't be evaluated without 'force'.
+
+; with Cy's eval-sequence
+(p1 1)
+; => (1 2)
+(p2 1)
+; => (1 2)
+
+
+;;;; c
+; 'force' will return the original input if it isn't a thunk 
+
+;;;; d
+; Cy's solution is better since it can avoid some strange error like the example in part b.
+```
