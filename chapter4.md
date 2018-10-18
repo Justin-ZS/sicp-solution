@@ -912,7 +912,7 @@ Then, the value of `factorial` is an *analyzed* function.
 
 ### 4.27
 ```scheme
-; There is only one 'delay-it' in eval-apply loop, that is in appling compound-procedure
+; There is only one 'delay-it' in eval-apply loop, that is in applying compound-procedure
 
 (id 10) ; => call `id`, count + 1
 (id (id 10)) ; => the inner (id 10) will become a thunk, call outer `id`, count + 1
@@ -931,4 +931,14 @@ w ; it force the thunk of (id 10), count + 1, return 10
 count
 ;;; L-Eval value:
 2
+```
+
+###4.28
+```scheme
+; If `Eval` doesn't force the operator, the operator may be a thunk and passed into `apply`.
+; so `apply` will throw an error since a thunk is neither a primitive-procedure nor compound-procedure.
+
+; example
+(define (compose f g) (lambda (x) (f (g n))))
+; if 'f' or 'g' is a thunk, an error will occur when call the composed procedure
 ```
