@@ -895,3 +895,17 @@ Then, the value of `factorial` is an *analyzed* function.
 ...
 ; Everything is fine!
 ```
+
+### 4.26
+```scheme
+(define unless-cond car)
+(define unless-usual cadr)
+(define unless-except caddr)
+(define (unless->if exp)
+  (make-if (unless-cond exp)
+           (unless-except exp)
+           (unless-usual exp)
+  ))
+
+; if 'unless' is a procedure rather than a syntax, it can be used as an expression.
+```
