@@ -870,3 +870,28 @@ Then, the value of `factorial` is an *analyzed* function.
 ; In the original version, the procs are traversed at analyze time.
 ```
 
+### 4.25
+```scheme
+; applicative-order
+(factorial 5)
+(* 5 (factorial 4))
+(* 5 (* 4 (factorial 3)))
+(* 5 (* 4 (* 3 (factorial 2))))
+(* 5 (* 4 (* 3 (* 2 (factorial 1)))))
+(* 5 (* 4 (* 3 (* 2 (* 1 (factorial 0)))))) ; !!!
+; Can't stop the recursion
+...
+; Error: maximum recursion depth exceeded
+
+; normal-order
+(factorial 5)
+(* 5 (factorial (- 5 1)))
+(* 5 (* (- 5 1) (factorial (- (- 5 1) 1))))
+... 
+(* 5 (* (- 5 1) (* (- (- 5 1) 1) (* (- (- (- 5 1) 1) 1) (factorial (- (- (- (- 5 1) 1) 1) 1))))))
+(* 5 (* (- 5 1) (* (- (- 5 1) 1) (* (- (- (- 5 1) 1) 1) 1))))
+(* 5 (* (- 5 1) (* (- (- 5 1) 1) 2)))
+(* 5 (* (- 5 1) (* (- (- 5 1) 1) 2)))
+...
+; Everything is fine!
+```
