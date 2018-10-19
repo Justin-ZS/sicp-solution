@@ -1185,6 +1185,6 @@ count
 (require (distinct? (list baker cooper fletcher miller smith))) ; slowest test
 
 ; the whole procedure will be faster if we can reduce the times of calling the slowest test --`distinct?`
-; move the `distinct?` down to last can speed up finding result since some case would be rejected early.
+; move the `distinct?` down to last can speed up finding result since some case would be rejected early.
 
 ```
