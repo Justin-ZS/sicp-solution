@@ -1087,3 +1087,36 @@ count
 ; change (list-of-delayed-args arguments env) to
 (list-of-delayed-args arguments (procedure-lazys procedure) env)
 ```
+
+### 4.33
+```scheme
+(define (text-of-quotation exp env)
+  (let ((text (cadr exp)))
+    (if (pair? text)
+        (eval (convert-list text) env)
+        text
+    )
+  ))
+
+; first version
+(define (convert-list xs)
+  (if (null? xs)
+      '()
+      (cons (underlaying-car xs) (convert-list (underlaying-cdr xs)))
+  ))
+
+; I suddenly realize that the cons, car and cdr in `eval` are primitive procedure.
+
+; the second version
+(define (convert-list xs)
+  (if (null? xs)
+      '()
+      (list 'cons (car xs) (convert-list (cdr xs)))
+  ))
+
+; test
+(convert-list '(1 2 3))
+; => (cons 1 (cons 2 (cons 3 ())))
+(cons 1 (cons 2 (cons 3 ())))
+; => (cons 1 (cons 2 (cons 3 ())))
+```
