@@ -1037,3 +1037,53 @@ count
 ;;;; d
 ; Cy's solution is better since it can avoid some strange error like the example in part b.
 ```
+
+### 4.31
+```scheme
+(define (lazy? x) (eq x 'lazy))
+(define (lazy-memo? x) (eq x 'lazy-memo))
+
+; need more augument to toggle lazy/memorized-lazy
+(define (delay-it exp lazy env)
+  (cond ((lazy? lazy) (list 'thunk exp env))
+        ((lazy-memo? lazy) (list 'memo-thunk exp env))
+        (else exp)
+  ))
+; still delay expression in `list-of-delayed-args`
+(define (list-of-delayed-args exps lazys env)
+  (if (no-operands? exps)
+      '()
+      (cons (delay-it (first-operand exps) (car lazys) env)
+            (list-of-delayed-args (rest-operands exps)
+                                  (cdr lazys)
+                                  env))))
+
+; extend 'force-it' to handle lazy/memorized-lazy
+(define (memo-thunk? obj)
+  (tagged-list? obj 'memo-thunk))
+(define (force-it obj)
+  (cond ((memo-thunk? obj)
+         (let ((result (actual-value
+                        (thunk-exp obj)
+                        (thunk-env obj))))
+           (set-car! obj 'evaluated-thunk)
+           (set-car! (cdr obj) result)
+           (set-cdr! (cdr obj) '())
+           result))
+        ((thunk? obj) (actual-value (thunk-exp obj) (thunk-env obj)))
+        ((evaluated-thunk? obj)
+         (thunk-value obj))
+        (else obj)))
+
+; get clean parameters without lazy flag
+(define (procedure-parameters p)
+  ((lambda (x) (if (symbol? x) x (car x))) (cadr p)))
+
+; get lazy flags
+(define (procedure-lazys p)
+  ((lambda (x) (if (symbol? x) 'normal (cadr x))) (cadr p)))
+
+; in apply
+; change (list-of-delayed-args arguments env) to
+(list-of-delayed-args arguments (procedure-lazys procedure) env)
+```
