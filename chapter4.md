@@ -1120,3 +1120,32 @@ count
 (cons 1 (cons 2 (cons 3 ())))
 ; => (1 2 3)
 ```
+
+### 4.35
+```scheme
+(define (an-integer-between low high)
+  (require (>= high low ))
+  (amb low (an-integer-between (+ low 1) high)))
+```
+
+### 4.36
+```scheme
+; replace `an-integer-between` by `an-integer-starting-from`
+(define (a-pythagorean-triple-between low)
+  (let ((i (an-integer-starting-from low)))
+    (let ((j (an-integer-starting-from i)))
+      (let ((k (an-integer-starting-from j)))
+        (require (= (+ (* i i) (* j j)) (* k k)))
+        (list i j k)))))
+
+; use 'an-integer-starting-from' generate infinite branches.
+; if the low is 1, it will test (1,1,1), (1,1,2), (1,1,3), ...
+; As a result, (1,2,1) would never be tested.
+
+(define (a-pythagorean-triple-between low)
+  (let ((k (an-integer-starting-from low)))
+    (let ((j (an-integer-between low k)))
+      (let ((i (an-integer-between low j)))
+        (require (= (+ (* i i) (* j j)) (* k k)))
+        (list i j k)))))
+```
