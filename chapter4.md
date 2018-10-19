@@ -1155,3 +1155,36 @@ count
 ; Q: Is he correct?
 ; A: yes, Ben's procedure reduce the times of testing j and obviously skip the searching for k.
 ```
+
+### 4.38
+```scheme
+; omit the requirement that Smith and Fletcher do not live on adjacent floors
+
+((baker 1) (cooper 2) (fletcher 4) (miller 3) (smith 5))
+((baker 1) (cooper 2) (fletcher 4) (miller 5) (smith 3))
+((baker 1) (cooper 4) (fletcher 2) (miller 5) (smith 3))
+((baker 3) (cooper 2) (fletcher 4) (miller 5) (smith 1))
+((baker 3) (cooper 4) (fletcher 2) (miller 5) (smith 1))
+```
+
+### 4.39
+```scheme
+; Q: Does the order of the restrictions in the multiple-dwelling procedure affect the answer?
+; A: No
+
+; Q: Does it affect the time to find an answer? 
+; A: Yes
+
+(require (> miller cooper)) ; halve the possible cases
+(require (not (= baker 5)))
+(require (not (= cooper 1)))
+(require (not (= fletcher 5)))
+(require (not (= fletcher 1)))
+(require (not (= (abs (- smith fletcher)) 1)))
+(require (not (= (abs (- fletcher cooper)) 1)))
+(require (distinct? (list baker cooper fletcher miller smith))) ; slowest test
+
+; the whole procedure will be faster if we can reduce the times of calling the slowest test --`distinct?`
+; move the `distinct?` down to last can speed up finding result since some case would be rejected early.
+
+```
