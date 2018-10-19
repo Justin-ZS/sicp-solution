@@ -1149,3 +1149,9 @@ count
         (require (= (+ (* i i) (* j j)) (* k k)))
         (list i j k)))))
 ```
+
+### 4.37
+```scheme
+; Q: Is he correct?
+; A: yes, Ben's procedure reduce the times of testing j and obviously skip the searching for k.
+```
