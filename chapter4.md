@@ -1186,5 +1186,24 @@ count
 
 ; the whole procedure will be faster if we can reduce the times of calling the slowest test --`distinct?`
 ; move the `distinct?` down to last can speed up finding result since some case would be rejected early.
+```
 
+###  4.40
+```scheme
+(define (multiple-dwelling)
+  (let* ((baker (amb 1 2 3 4))
+         (fletcher (amb 2 3 4))
+         (cooper (amb (an-integer-between (+ fletcher 2) 5)
+                      (an-integer-between 2 (- fletcher 2))))
+         (smith (amb (an-integer-between (+ fletcher 2) 5)
+                     (an-integer-between 1 (- fletcher 2))))
+         (miller (an-integer-between (+ cooper 1) 5)))
+
+    (require (distinct? (list baker cooper fletcher miller smith)))
+    (list (list 'baker baker)
+          (list 'cooper cooper)
+          (list 'fletcher fletcher)
+          (list 'miller miller)
+          (list 'smith smith))
+    ))
 ```
