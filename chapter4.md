@@ -1340,3 +1340,46 @@ count
 ; Q: Also determine how many solutions there are if we are not told that Mary Ann's last name is Moore.
 ; This wouldn't change anything since it always can be inferred that Mr. Moore's daughter is Mary.
 ```
+
+### 4.44
+```scheme
+(define (eight-queens)
+  (define (queens-puzzle size)
+    ; copied from 2.42
+    (define (check? q1 q2)
+      (let ((x1 (car q1))
+            (y1 (cadr q1))
+            (x2 (car q2))
+            (y2 (cadr q2)))
+          (cond ((= x1 x2)                     #t) ; same row
+                ((= y1 y2)                     #t) ; same column
+                ((or (= (- x1 y1) (- x2 y2)) 
+                      (= (+ x1 y1) (+ x2 y2)))  #t) ; same diagonal   
+                (else                          #f))
+      ))
+    (define (no-attack? q qs) (null? (filter (lambda (t) (check? t p)) qs)))
+
+    (define (get-chess n prev-chess)
+      (if (= n 0)
+        prev-chess
+        (get-chess (- n 1) (cons n prev-chess))
+      ))
+    (define chess (get-chess size '()))
+    ; size: 8 => chess: (1 2 3 4 5 6 7 8)
+    (define (get-one-place) (list (apply amb chess) (apply amb chess)))
+
+    (define (calc-queens n prev-queens)
+      (if (= n 0)
+          prev-queens
+          (let ((queen (get-one-place)))
+            (require (no-attack? queen prev-queens))
+            (calc-queens (- n 1) (cons queen prev-queens))
+          )
+      )
+    )
+    (calc-queens size '())
+  )
+
+  (queens-puzzle 8)
+)
+```
