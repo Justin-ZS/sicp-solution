@@ -1272,3 +1272,71 @@ count
           (list 'mary mary))
   ))
 ```
+
+### 4.43
+```scheme
+(define (yacht-puzzle)
+  (let ((mary 'Mr-Moore)
+        (gabrielle 'Mr-Hall)
+        (lorna 'Colonel-Downing)
+        (rosalind 'Dr-Parker)
+        (melissa 'Sir-Barnacle))
+
+    (require (distinct? (list mary gabrielle lorna rosalind melissa)))
+    (list (list 'mary mary)
+          (list 'gabrielle gabrielle)
+          (list 'lorna lorna)
+          (list 'rosalind rosalind)
+          (list 'melissa melissa))
+  ))
+
+; 一步步排除结果把答案推出来了，这样明显不行。
+; 现在回想起来，4.40的意思应该是：在生成下一个let前require相应的条件，而不是直接把条件隐含在code内
+
+(define (yacht-puzzle)
+  (define fathers '(Mr-Moore Colonel-Downing Mr-Hall Sir-Barnacle Dr-Parker))
+
+  (let ((melissa (apply amb fathers)))
+    ; The Melissa is named after Sir Barnacle's daughter
+    (require (= melissa 'Sir-Barnacle))
+
+    (let ((mary (apply amb fathers)))
+      ; Mary's father has four friends: ..., Mr. Moore (not in friends) owns the Lorna
+      (require (= mary 'Mr-Moore))
+
+      (let ((gabrielle (apply amb fathers)))
+        ; Sir Barnacle's yacht is the Gabrielle
+        (require (not (= gabrielle 'Sir-Barnacle)))
+
+        ; Gabrielle's father owns the yacht that is named after Dr. Parker's daughter
+        (require (not (= gabrielle 'Dr-Parker)))
+        ; (= melissa 'Sir-Barnacle) and The Melissa, owned by Colonel Downing
+        ; (= mary 'Mr-Moore) and Dr. Parker owns the Mary (inferred by exclusion)
+        ; As a result, Gabrielle's father is neither Colonel Downing or Dr. Parker
+        (require (not (= gabrielle 'Colonel-Downing)))
+        (require (not (= gabrielle 'Dr. Parker)))
+
+        (let ((rosalind (apply amb fathers)))
+          ; Mr. Hall the Rosalind
+          (require (not (= rosalind 'Mr-Hall)))
+
+          (let ((lorna (apply amb fathers)))
+            ; Mr. Moore owns the Lorna
+            (require (not (= lorna 'Mr-Moore)))
+
+            (require (distinct? (list mary gabrielle lorna rosalind melissa)))
+            (list (list 'mary mary)
+                  (list 'gabrielle gabrielle)
+                  (list 'lorna lorna)
+                  (list 'rosalind rosalind)
+                  (list 'melissa melissa))
+          )
+        )
+      )
+    )
+  )
+)
+
+; Q: Also determine how many solutions there are if we are not told that Mary Ann's last name is Moore.
+; This wouldn't change anything since it always can be inferred that Mr. Moore's daughter is Mary.
+```
