@@ -1206,3 +1206,40 @@ count
           (list 'smith smith))
     ))
 ```
+
+### 4.41
+```scheme
+(define (reject x xs) (filter (lambda (i) (not (eq? x i))) xs))
+(define (multiple-dwelling)
+  (define (get-all-cases xs)
+    (if (null? xs)
+        (list xs)
+        (fold (lambda (i cases)
+                  (append
+                    (map (lambda (is) (cons i is))
+                         (get-all-cases (reject i xs)))
+                    cases))
+                '()
+                xs)
+    ))
+  (define (check-floor? candidates)
+    (let ((baker (first candidates))
+          (cooper (second candidates))
+          (fletcher (third candidates))
+          (miller  (fourth candidates))
+          (smith  (fifth candidates)))
+      (and (> miller cooper)
+           (not (= baker 5))
+           (not (= cooper 1))
+           (not (= fletcher 5))
+           (not (= fletcher 1))
+           (not (= (abs (- smith fletcher)) 1))
+           (not (= (abs (- fletcher cooper)) 1)))
+    ))
+  (filter check-floor? (get-all-cases '(1 2 3 4 5)))
+)
+
+; test
+(multiple-dwelling)
+; => ((3 2 4 5 1))
+```
