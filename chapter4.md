@@ -1383,3 +1383,99 @@ count
   (queens-puzzle 8)
 )
 ```
+
+### 4.45
+1. simple-noun-phrase = article + noun
+1. noun-phrase = simple-noun-phrase | noun-phrase + `prep-phrase`
+1. `prep-phrase` = preposition + noun-phrase
+1. verb-phrase = verb | verb-phrase + `prep-phrase`
+1. sentence = noun-phrase + verb-phrase
+
+`noun-phrase` and `verb-phrase` are recursive.
+
+```scheme
+; The professor lectures to the student in the class with the cat.
+
+; (article the) (noun professor) (verb lectures) (prep to) (article the) (noun student)
+; (preposition in) (article the) (noun class) (preposition with) (article the) (noun cat)
+
+; the-professor  -> (simple-noun-phrase (article the) (noun professor))
+; the-student    -> (simple-noun-phrase (article the) (noun student))
+; the-class      -> (simple-noun-phrase (article the) (noun class))
+; in-the-class   -> (prep-phrase (preposition in) the-class)
+; with-the-cat   -> (prep-phrase (preposition with) the-cat)
+
+; student in class with cat 
+(sentence
+  the-professor
+  (verb-phrase
+    (verb lectures)
+    (prep-phrase 
+      (prep to)
+      (noun-phrase
+        (noun-phrase
+          the-student
+          in-the-class)
+        with-the-cat)))
+)
+
+; professor with cat, student in class
+(sentence
+  the-professor
+  (verb-phrase
+    (verb-phrase
+      (verb lectures)
+      (prep-phrase 
+        (prep to)
+        (noun-phrase
+          the-student
+          in-the-class)))
+    with-the-cat)
+)
+
+; professor in class with cat
+(sentence
+  the-professor
+  (verb-phrase
+    (verb-phrase
+      (verb-phrase
+        (verb lectures)
+        (prep-phrase 
+          (prep to)
+          the-student))
+      in-the-class)
+    with-the-cat)
+)
+
+; class with cat, professor in class
+(sentence
+  the-professor
+  (verb-phrase
+    (verb-phrase
+      (verb lectures)
+      (prep-phrase 
+        (prep to)
+        the-student))
+    (prep-phrase
+      (preposition in)
+      (noun-phrase
+        the-class
+        with-the-cat)))
+)
+
+; class with cat, student in class
+(sentence
+  the-professor
+  (verb-phrase
+    (verb lectures)
+    (prep-phrase 
+      (prep to)
+      (noun-phrase
+        the-student
+        (prep-phrase
+          (preposition in)
+          (noun-phrase
+            the-class
+            with-the-cat)))))
+)
+```
