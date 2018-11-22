@@ -1486,3 +1486,11 @@ count
 ;  (set! *unparsed* (cdr *unparsed*)) this code remove the left first item in list and recursion the rest.
 ; all those determine the order of evaluator should from left to right
 ```
+
+### 4.47
+```scheme
+; the second operand will call (parse-verb-phrase) again. this may lead to an infinite loop.
+; I don't know nondeterministic computing can settle it or not.
+; the code doesn't work if the evaluator can't handle it.
+; interchange the order in amb make no sense
+```
