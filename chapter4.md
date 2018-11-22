@@ -1479,3 +1479,10 @@ count
             with-the-cat)))))
 )
 ```
+
+### 4.46
+```scheme
+; english sentence has own order --- from left to right.
+;  (set! *unparsed* (cdr *unparsed*)) this code remove the left first item in list and recursion the rest.
+; all those determine the order of evaluator should from left to right
+```
